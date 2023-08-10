@@ -1,0 +1,8 @@
+[package]
+name = "img_to_heightmap"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+image = "0.24.6"
+stl_io = "0.7.0"
