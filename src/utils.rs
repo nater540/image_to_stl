@@ -3,7 +3,7 @@ use image::{ImageBuffer, Luma, Rgb};
 use std::path::PathBuf;
 use anyhow::Result;
 
-/// Simple black & white image conversion with optional gaussian blur operations
+/// Simple black & white image conversion with optional gaussian blur
 pub fn convert_bw(input_image: ImageBuffer<Rgb<u8>, Vec<u8>>, gaussian: Option<f32>) -> ImageBuffer<Luma<u8>, Vec<u8>> {
   let mut output_image: ImageBuffer<Luma<u8>, _> = ImageBuffer::new(input_image.width(), input_image.height());
 
@@ -32,27 +32,7 @@ pub fn load_png(file_path: &PathBuf) -> Result<ImageBuffer<Rgb<u8>, Vec<u8>>> {
   )
 }
 
-pub fn write_heightmap_png(heightmap: &Vec<Vec<f32>>, path: PathBuf) -> Result<()> {
-  let width = heightmap[0].len() as u32;
-  let height = heightmap.len() as u32;
-  let max_height = heightmap
-    .iter()
-    .flat_map(|row| row.iter()).cloned().fold(f32::MIN, f32::max);
-
-  let mut output = ImageBuffer::new(width, height);
-
-  for (y, row) in heightmap.iter().enumerate() {
-    for (x, &value) in row.iter().enumerate() {
-      let pixel_value = (value / max_height * 255.0) as u8;
-      let pixel = Luma([pixel_value]);
-      output.put_pixel(x as u32, y as u32, pixel);
-    }
-  }
-
-  output.save(path).map_err(|e| e.into())
-}
-
-/// Generates a heightmap from a u16 grayscale image with optional heights
+/// Generates a heightmap from a u8 grayscale image
 pub fn generate_heightmap(image: ImageBuffer<Luma<u8>, Vec<u8>>, max_height: f32, base_height: Option<f32>) -> Vec<Vec<f32>> {
   let mut heights: Vec<(u32, u32, f32)> = image
     .enumerate_pixels()
@@ -93,4 +73,25 @@ pub fn generate_heightmap(image: ImageBuffer<Luma<u8>, Vec<u8>>, max_height: f32
   }
 
   heightmap
+}
+
+/// Mostly used for sanity checking atm
+pub fn write_heightmap_png(heightmap: &Vec<Vec<f32>>, path: PathBuf) -> Result<()> {
+  let width = heightmap[0].len() as u32;
+  let height = heightmap.len() as u32;
+  let max_height = heightmap
+    .iter()
+    .flat_map(|row| row.iter()).cloned().fold(f32::MIN, f32::max);
+
+  let mut output = ImageBuffer::new(width, height);
+
+  for (y, row) in heightmap.iter().enumerate() {
+    for (x, &value) in row.iter().enumerate() {
+      let pixel_value = (value / max_height * 255.0) as u8;
+      let pixel = Luma([pixel_value]);
+      output.put_pixel(x as u32, y as u32, pixel);
+    }
+  }
+
+  output.save(path).map_err(|e| e.into())
 }

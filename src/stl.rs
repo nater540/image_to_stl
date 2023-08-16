@@ -1,5 +1,8 @@
 use stl_io::{Normal, Vertex, Triangle};
+use std::{io::Write, fs::File};
+use anyhow::Result;
 
+/// Takes a pre-calculated heightmap & attempts to generate an STL mesh for export
 pub fn build_mesh(heightmap: Vec<Vec<f32>>) -> Vec<Triangle> {
   let mut triangles = Vec::new();
 
@@ -20,6 +23,17 @@ pub fn build_mesh(heightmap: Vec<Vec<f32>>) -> Vec<Triangle> {
   }
 
   triangles
+}
+
+/// Writes a collection of triangles to a binary STL file
+pub fn write_stl(triangles: Vec<Triangle>, path: std::path::PathBuf) -> Result<()> {
+  let mut binary_stl = Vec::<u8>::new();
+  stl_io::write_stl(&mut binary_stl, triangles.iter())?;
+
+  let mut file = File::create(path)?;
+  file.write_all(&binary_stl)?;
+
+  Ok(())
 }
 
 fn calculate_normal(v1: Vertex, v2: Vertex, v3: Vertex) -> Normal {
